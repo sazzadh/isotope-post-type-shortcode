@@ -18,13 +18,21 @@ $path_abs = trailingslashit(str_replace('\\','/',ABSPATH));
 define('ISOTOPEGS_URL', site_url(str_replace( $path_abs, '', $path_dir )));
 define('ISOTOPEGS_DRI', $path_dir);
 
+/*
+	Register Scripts
+=========================================================*/
 add_action('wp_enqueue_scripts', 'isotopegs_script_loader');
 function isotopegs_script_loader(){
 	wp_enqueue_style('isotope-grid-shortcode', ISOTOPEGS_URL.'css/isotope-grid-shortcode.css');
 	wp_enqueue_script('isotope', ISOTOPEGS_URL.'js/isotope.pkgd.min.js' , array('jquery'), '', true);
+	wp_enqueue_script('imagesloaded', ISOTOPEGS_URL.'js/imagesloaded.pkgd.min.js' , array('jquery'), '', true);
 }
 
 
+
+/*
+	Shortcode for Post
+=========================================================*/
 add_shortcode('isotope_post_grid', 'isotopegs_post_shortcode');
 function isotopegs_post_shortcode( $atts, $content = null ) {
     $settings = shortcode_atts( array(
@@ -107,6 +115,10 @@ function isotopegs_post_shortcode( $atts, $content = null ) {
 	return $output;	
 }
 
+
+/*
+	Shortcode for Custom function array
+=========================================================*/
 add_shortcode('isotope_fn_grid', 'isotopegs_fn_shortcode');
 function isotopegs_fn_shortcode( $atts, $content = null ) {
     $settings = shortcode_atts( array(
@@ -116,9 +128,10 @@ function isotopegs_fn_shortcode( $atts, $content = null ) {
 		'class' => '',
 		'gap' => '1x', //1x, 2x, 3x, 4x, 5x, 6x
 		'array_fn' => '',
-		'filter_array_fn' => '',
+		'filter_fn' => '',
 		'content_fn' => '',
 		'text_all' => 'All',
+		'args' => '',
     ), $atts );
 	
 	$output = '';
@@ -135,12 +148,13 @@ function isotopegs_fn_shortcode( $atts, $content = null ) {
 	
 	$array_function = $settings['array_fn'];
 	$content_function = ($settings['content_fn'] == '') ? 'isotopegs_fn_content_function' : $settings['content_fn'];
-	$filter_array_function = $settings['filter_array_fn'];
+	$filter_array_function = $settings['filter_fn'];
 	
 	if(function_exists($filter_array_function)){
-		$filters = $filter_array_function();
+		$filters = $filter_array_function($settings);
 		if(is_array($filters)){
 			echo '<ul class="isotopegs_nav nav_'.$uid.'">';
+				echo '<li><span data-filter="*">'.$settings['text_all'].'</span></li>';
 				foreach($filters as $filter){
 					echo '<li><span data-filter=".'.$filter['slug'].'">'.$filter['title'].'</span></li>';
 				}
@@ -149,11 +163,11 @@ function isotopegs_fn_shortcode( $atts, $content = null ) {
 	}
 	
 	if(function_exists($array_function) && function_exists($content_function)){
-		$items = $array_function();
+		$items = $array_function($settings);
 		if(is_array($items)){
 			echo '<div class="'.$main_div_class.'">';
 				foreach($items as $item){
-					$content_function($item);
+					$content_function($item, $settings);
 				}
 			echo '</div>';
 		}
@@ -168,32 +182,10 @@ function isotopegs_fn_shortcode( $atts, $content = null ) {
 }
 
 
-function isotopegs_post_content_function(){
-	ob_start();	
-	?>
-    <div class="isotopegs_post_content">
-    	<a href="<?php the_permalink(); ?>"><?php the_post_thumbnail( 'medium' ); ?></a>
-        <h5><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h5>
-    </div>
-    <?php
-	$output = ob_get_contents();
-	ob_end_clean();
-	
-	return $output;	
-}
 
-function isotopegs_fn_content_function($item){		
-	?>
-    <div class="isotopegs_item">
-    	<div class="isotopegs_item_in">
-        	<a href="<?php echo $item['link']; ?>"><img src="<?php echo $item['image']; ?>" alt="<?php echo $item['title']; ?>"></a>
-            <h5><a href="<?php echo $item['link']; ?>"><?php echo $item['title']; ?></a></h5>
-        </div>
-    </div>
-    <?php
-}
-
-
+/*
+	Output post terms by Post ID
+=========================================================*/
 function isotopegs_post_terms($post_id, $taxonomy){
 	$terms = get_the_terms( $post_id, $taxonomy );
 	$on_draught = '';
@@ -208,6 +200,10 @@ function isotopegs_post_terms($post_id, $taxonomy){
 }
 
 
+
+/*
+	The JavaScript of the Isotope
+=========================================================*/
 function isotopegs_js($uid, $settings, $data = array()){
 	?>   
     <script type="text/javascript">
@@ -215,6 +211,10 @@ function isotopegs_js($uid, $settings, $data = array()){
 			// init Isotope
 			var $grid_<?php echo $uid; ?> = $('.<?php echo $uid; ?>').isotope({
 			  itemSelector: '.isotopegs_item',
+			});
+			
+			$grid_<?php echo $uid; ?>.imagesLoaded().progress( function() {
+				$grid_<?php echo $uid; ?>.isotope('layout');
 			});
 			
 			// filter items on button click
@@ -228,6 +228,13 @@ function isotopegs_js($uid, $settings, $data = array()){
 }
 
 
+
+
+
+/*
+	Contert a string with ", " to filter class
+	This is useful when you use function shortcode
+=========================================================*/
 function isotopegs_string_to_filter_class($string){
 	$filter = '';
 	$raw_j = array();
@@ -244,6 +251,14 @@ function isotopegs_string_to_filter_class($string){
 	return $filter;
 }
 
+
+
+
+
+/*
+	Create filter array from a main array
+	This is useful when you use function shortcode
+=========================================================*/
 function isotopegs_array_to_filter_array($arrays, $filter_key = 'filter'){
 	$data = array();
 	$check = array();
@@ -268,4 +283,56 @@ function isotopegs_array_to_filter_array($arrays, $filter_key = 'filter'){
 	}
 	
 	return $data;
+}
+
+
+/*
+	Content function for Post Shortcode
+=========================================================*/
+function isotopegs_post_content_function(){
+	ob_start();	
+	?>
+    <div class="isotopegs_post_content">
+    	<a href="<?php the_permalink(); ?>"><?php the_post_thumbnail( 'medium' ); ?></a>
+        <h5><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h5>
+    </div>
+    <?php
+	$output = ob_get_contents();
+	ob_end_clean();
+	
+	return $output;	
+}
+
+
+/*
+	Content function for Function Shortcode
+=========================================================*/
+function isotopegs_fn_content_function($item, $settings){		
+	$filter = '';
+	if(isset($item['filter'])){
+		$filter = isotopegs_string_to_filter_class($item['filter']);
+	}
+	?>
+    <div class="isotopegs_item <?php echo $filter; ?>">
+    	<div class="isotopegs_item_in">
+        	<a href="<?php echo $item['link']; ?>"><img src="<?php echo $item['image']; ?>" alt="<?php echo $item['title']; ?>"></a>
+            <h5><a href="<?php echo $item['link']; ?>"><?php echo $item['title']; ?></a></h5>
+        </div>
+    </div>
+    <?php
+}
+function isotopegs_sample_array_fn($settings){
+	return array(
+		array('title' => 'Fashion #1', 'image' => 'https://unsplash.it/400/300/?image=1083', 'link'=>'#', 'filter' => 'IMG, Home, Find'),
+		array('title' => 'Fashion #2', 'image' => 'https://unsplash.it/400/300?image=1040', 'link'=>'#', 'filter' => 'IMG, Find'),
+		array('title' => 'Fashion #3', 'image' => 'https://unsplash.it/400/300?image=1027', 'link'=>'#', 'filter' => 'Find, Home'),
+		array('title' => 'Fashion #4', 'image' => 'https://unsplash.it/400/300?image=999', 'link'=>'#', 'filter' => 'Home, Land'),
+		array('title' => 'Fashion #5', 'image' => 'https://unsplash.it/400/300?image=977', 'link'=>'#', 'filter' => 'Land, Find, IMG'),
+		array('title' => 'Fashion #6', 'image' => 'https://unsplash.it/400/300?image=961', 'link'=>'#', 'filter' => 'IMG, Find'),
+		array('title' => 'Fashion #7', 'image' => 'https://unsplash.it/400/300?image=743', 'link'=>'#', 'filter' => 'Find, Home'),
+	);	
+}
+function isotopegs_sample_filter_array_fn($settings){
+	$arrays = isotopegs_sample_array_fn($settings);
+	return isotopegs_array_to_filter_array($arrays, 'filter');
 }

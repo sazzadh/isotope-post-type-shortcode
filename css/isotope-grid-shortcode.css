@@ -1,4 +1,8 @@
-.isotopegs.column_4 .isotopegs_item{ width:25%; }
+.isotopegs.column_1 .isotopegs_item{ width:100%; }
+.isotopegs.column_2 .isotopegs_item{ width:33.333%; }
+.isotopegs.column_3 .isotopegs_item{ width:25%; }
+.isotopegs.column_5 .isotopegs_item{ width:20%; }
+.isotopegs.column_6 .isotopegs_item{ width:16.666%; }
 
 .isotopegs.gap_1x{ margin-left:-1px; margin-right:-1px; }
 .isotopegs.gap_1x .isotopegs_item_in{ margin:1px; }
