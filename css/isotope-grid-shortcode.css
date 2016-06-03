@@ -1,0 +1,67 @@
+.isotopegs.column_4 .isotopegs_item{ width:25%; }
+
+.isotopegs.gap_1x{ margin-left:-1px; margin-right:-1px; }
+.isotopegs.gap_1x .isotopegs_item_in{ margin:1px; }
+.isotopegs.gap_2x{ margin-left:-2px; margin-right:-2px; }
+.isotopegs.gap_2x .isotopegs_item_in{ margin:2px; }
+.isotopegs.gap_3x{ margin-left:-5px; margin-right:-5px; }
+.isotopegs.gap_3x .isotopegs_item_in{ margin:5px; }
+.isotopegs.gap_4x{ margin-left:-10px; margin-right:-10px; }
+.isotopegs.gap_4x .isotopegs_item_in{ margin:10px; }
+.isotopegs.gap_5x{ margin-left:-15px; margin-right:-15px; }
+.isotopegs.gap_5x .isotopegs_item_in{ margin:15px; }
+.isotopegs.gap_6x{ margin-left:-20px; margin-right:-20px; }
+.isotopegs.gap_6x .isotopegs_item_in{ margin:20px; }
+
+.isotopegs_nav,
+.isotopegs_nav li,
+.isotopegs_nav li ul,
+.isotopegs_nav li ul li{
+	margin:0 !important;
+	padding:0 !important;
+	list-style-type:none !important;
+}
+.isotopegs_nav{
+	margin-left:-3px !important; 
+	margin-right:-3px !important;
+	position: relative;
+}
+.isotopegs_nav li{
+	display:inline-block;
+	position:relative;
+}
+.isotopegs_nav li span{
+	margin-left:3px;
+	margin-right:3px;
+	padding:10px 20px;
+	cursor:pointer;
+	background:#077FC1;
+	color:#fff;
+	display: block;
+}
+.isotopegs_nav li span:hover{
+	opacity:0.8;	
+}
+.isotopegs_nav li ul{
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 100%;
+    z-index: 9999;
+    width: 300px;
+}
+.isotopegs_nav li ul li{
+    display: block;
+}
+.isotopegs_nav li ul li span{
+	background: #4D9CC7;
+    color: #fff;
+}
+.isotopegs_nav li ul li span:hover{
+	background: #155E86;
+	opacity:1;
+}
+
+.isotopegs_nav li:hover ul{
+	display:block;
+}
